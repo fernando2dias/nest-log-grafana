@@ -1,4 +1,3 @@
-// Imports atualizados para incluir 'Req' e 'Request'
 import { Controller, Get, Post, Body, Patch, Param, Delete, Inject, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { UserService } from './user.service';
@@ -64,7 +63,6 @@ export class UserController {
 
   @Delete(':id')
   remove(@Req() req: Request, @Param('id') id: string) {
-    // Usando .warn() para uma operação destrutiva, como exemplo
     this.logger.warn('Requisição para remover um usuário', {
       context: UserController.name,
       method: req.method,
