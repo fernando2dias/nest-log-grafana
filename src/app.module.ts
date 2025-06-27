@@ -6,6 +6,8 @@ import { UserModule } from './user/user.module';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 
+const LokiTransport = require('winston-loki');
+
 const getLogOrigin = () => {
   const stack = new Error().stack;
 
@@ -65,6 +67,17 @@ const getLogOrigin = () => {
               ),
             }),
             // other transports...
+            new LokiTransport({
+              host: 'http://loki:3100', // Endereço do seu serviço Loki
+              labels: { app: 'seu-projeto-nestjs' },
+              json: true,
+              format: winston.format.combine(
+                winston.format.timestamp(),
+                winston.format.json(),
+              ),
+              replaceTimestamp: true,
+              onConnectionError: (err) => console.error(err),
+            }),
           ],
         };
       },
