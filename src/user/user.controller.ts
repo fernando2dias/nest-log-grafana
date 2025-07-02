@@ -26,15 +26,26 @@ export class UserController {
   }
 
   @Get()
-  findAll(@Req() req: Request) {
-    this.logger.info('Requisição para buscar todos os usuários', {
-      context: UserController.name,
-      method: req.method,
-      url: req.url,
-      ip: req.ip,
-    });
-    return this.userService.findAll();
+  async findAll(@Req() req: Request) {
+    // this.logger.info('Requisição para buscar todos os usuários', {
+    //   context: UserController.name,
+    //   method: req.method,
+    //   url: req.url,
+    //   ip: req.ip,
+    // });
+
+    
+    setInterval(async () => {
+      try {
+        await this.userService.findAll();
+      } catch (error) {
+        console.error('Erro ao executar tarefa:', error);
+      }
+    }, Math.floor(Math.random() * 30000)); // 30 segundos
+
+    
   }
+  
 
   @Get(':id')
   findOne(@Req() req: Request, @Param('id') id: string) {

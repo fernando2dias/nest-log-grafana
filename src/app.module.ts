@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
+import { JobsModule } from './jobs/jobs.module';
 
 const LokiTransport = require('winston-loki');
 
@@ -33,6 +34,7 @@ const getLogOrigin = () => {
 @Module({
   imports: [
     UserModule,
+    JobsModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
