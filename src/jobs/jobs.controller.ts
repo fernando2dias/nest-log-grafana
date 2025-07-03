@@ -16,33 +16,32 @@ export class JobsController{
 
     @Get()
     async initJobs(){
+        
         setInterval(async () => {
             try {
-                this.logger.info('Iniciando tarefa A');
-                await this.jobsAService.initJob();
+            this.logger.info('Iniciando tarefa A');
+            await this.jobsAService.initJob();
             } catch (error) {
-                this.logger.error('Erro ao executar tarefa A:', error.message);
+            this.logger.error('Erro ao executar tarefa A:', error.message);
             }
         }, Number(process.env.JOB_A_TIME) || 30000); // 30 seconds
 
-
         setInterval(async () => {
             try {
-                this.logger.info('Iniciando tarefa B');
-                await this.jobsAService.initJob();
+            this.logger.info('Iniciando tarefa B');
+            await this.jobsBService.initJob();
             } catch (error) {
-                this.logger.error('Erro ao executar tarefa B:', error.message);
+            this.logger.error('Erro ao executar tarefa B:', error.message);
             }
         }, Number(process.env.JOB_B_TIME) || 40000); // 40 seconds
 
-
         setInterval(async () => {
             try {
-                this.logger.info('Iniciando tarefa C');
-                await this.jobsAService.initJob();
+            this.logger.info('Iniciando tarefa C');
+            await this.jobsCService.initJob();
             } catch (error) {
-                this.logger.error('Erro ao executar tarefa C:', error.message);
+            this.logger.error('Erro ao executar tarefa C:', error.message);
             }
-        }, Number(process.env.JOB_B_TIME) || 50000); // 50 seconds
+        }, Number(process.env.JOB_C_TIME) || 50000); // 50 seconds
     }
 }

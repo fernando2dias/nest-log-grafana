@@ -12,63 +12,7 @@ export class UserService {
   }
 
   async findAll() {
-    // for (let i = 0; i < 1000000; i++) {
-    //   setInterval(() => {
-    //     let number = (i * Math.random()) / 2;
-    //     if(number % 2 === 0) {
-                 
-    //       this.logger.info(`Número par: ${number}`, {
-    //         context: UserService.name,
-    //         method: 'GET',
-    //         url: 'req.url',
-    //         ip: 'req.ip',
-    //         body: `Número par: ${number}`,
-    //       });
-
-    //     } else {
-    //       this.logger.error(`Número ímpar: ${number}`);
-
-    //       this.logger.error(`Número ímpar: ${number}`, {
-    //         context: UserService.name,
-    //         method: 'GET',
-    //         url: 'req.url',
-    //         ip: 'req.ip',
-    //         body: `Número ímpar: ${number}`,
-    //       });
-    //     }
-    //   }, 1000);
-      
-    // }
-
-    // Gerar um numero inteiro entre 0 e 1000
-    let number = Math.floor(Math.random() * 1001);
-        if(number % 2 === 0) {
-                 
-          this.logger.info(`Número par: ${number}`, {
-            context: UserService.name,
-            method: 'GET',
-            url: 'req.url',
-            ip: 'req.ip',
-            body: `Número par: ${number}`,
-          });
-
-        } else {
-          this.logger.error(`Número ímpar: ${number}`);
-
-          this.logger.error(`Número ímpar: ${number}`, {
-            context: UserService.name,
-            method: 'GET',
-            url: 'req.url',
-            ip: 'req.ip',
-            body: `Número ímpar: ${number}`,
-          });
-        }
-
-        
-
-
-
-    return `Numero gerado: ${number}`;
+    return `This action returns all users`;
   }
 
   findOne(id: number) {

@@ -25,18 +25,6 @@ services:
     networks:
       - monitoring
 
-  prometheus:
-    image: prom/prometheus:v2.45.0
-    ports:
-      - '9090:9090'
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-    restart: unless-stopped
-    networks:
-      - monitoring
-
   loki:
     image: grafana/loki:2.8.0
     ports:
@@ -46,6 +34,8 @@ services:
     restart: unless-stopped 
     networks:
       - monitoring
+    volumes:
+      - loki-data:/loki
 
   grafana:
     image: grafana/grafana:9.5.3
@@ -53,13 +43,14 @@ services:
       - '3020:3000'
     volumes:
       - ./grafana/provisioning/:/etc/grafana/provisioning/
+      - grafana-data:/var/lib/grafana
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
     restart: unless-stopped 
     depends_on: 
       - loki
-      - prometheus
+      #- prometheus
     networks:
       - monitoring
 
@@ -68,3 +59,5 @@ networks:
 
 volumes:
   postgresql-volume:
+  grafana-data:
+  loki-data:

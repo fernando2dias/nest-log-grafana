@@ -1,103 +1,171 @@
-# 1. Iniciar docker
+# Monitoramento de Logs com NestJS e Grafana
+
+Prova de Conceito (PoC) para demonstrar uma arquitetura de monitoramento robusta para uma API NestJS, utilizando o Grafana para visualização centralizada de logs estruturados coletados pelo Loki.
+
+![Screenshot do Dashboard Final no Grafana](https://i.imgur.com/jlaTC5u.png)
+## 🎯 Objetivo
+
+O objetivo principal desta PoC é demonstrar uma arquitetura de monitoramento robusta para uma API NestJS, centralizando logs estruturados e métricas em um dashboard interativo no Grafana.
+
+Isso resolve o problema de **centralizar a observabilidade de uma aplicação**, facilitando a depuração de erros e a análise de performance em tempo real.
+
+## 🛠️ Arquitetura e Tecnologias
+
+Este projeto é totalmente containerizado usando Docker e Docker Compose. A pilha de tecnologias inclui:
+
+* **Aplicação:**
+    * **NestJS:** Framework Node.js para construir a API que simula os jobs.
+    * **Winston:** Biblioteca de logging para gerar logs estruturados em JSON.
+    * `winston-loki`: Transporte do Winston que envia os logs diretamente para o Loki.
+* **Stack de Monitoramento:**
+    * **Loki:** Sistema de agregação de logs.
+    * **Grafana:** Plataforma de visualização para criar os dashboards.
+* **Orquestração:**
+    * **Docker & Docker Compose:** Para gerenciar o ambiente multi-container.
+
+Futuramente, a arquitetura será expandida para incluir **PostgreSQL**, **RabbitMQ** e deploy em **Kubernetes (K8s)**.
+
+### Fluxo de Dados dos Logs
+
+1.  Uma requisição HTTP na API NestJS dispara a simulação de múltiplos jobs (Job A, Job B, Job C).
+2.  Cada serviço (`JobsAService`, `JobsBService`, etc.) utiliza o logger do Winston para registrar o início, o fim e os resultados de suas tarefas. O campo `context` no log é usado para identificar qual job gerou a mensagem.
+3.  O `winston-loki` intercepta cada log, o formata como JSON e o envia via HTTP para o serviço do Loki (`http://loki:3100`).
+4.  O Loki recebe e armazena o log com a label `{app="seu-projeto-nestjs"}`.
+5.  No Grafana, múltiplos dashboards (um para cada job) executam queries em LogQL para buscar, filtrar e visualizar os logs, permitindo uma análise detalhada e isolada de cada tarefa.
+
+## 📊 Exemplos de Queries LogQL
+
+Abaixo estão algumas das principais queries em LogQL utilizadas nos dashboards para monitorar a aplicação. Elas podem ser testadas diretamente na aba **Explore** do Grafana.
+
+### 1. Contagem de Logs por Nível
+
+Para criar painéis do tipo "Stat" que mostram a contagem total de logs por nível (`info`, `warn`, `error`, `crit`) em um determinado período de tempo.
+
+**Contagem de Erros:**
+```logql
+sum(count_over_time({app="seu-projeto-nestjs"} | json | level = "error" [$__range]))
 ```
+## Panel Geral
+Para gerar o painel geral com informações totais de logs por level.
+
+![Screenshot do Dashboard Final no Grafana](https://i.imgur.com/jlaTC5u.png)
+### TIPO DO GRÁFICO: "BAR GAUGE"
+
+**info - VERDE**
+```logql
+count_over_time({app="seu-projeto-nestjs"} |= "info" [$__range])
+```
+
+**errors - VERMELHO**
+```logql
+count_over_time({app="seu-projeto-nestjs"} |= "error" [$__range])
+```
+
+**warnings - AMARELO**
+```logql
+count_over_time({app="seu-projeto-nestjs"} |= "warn" [$__range])
+```
+
+### PAINEL DE LOGS GERAL
+
+**Logs gerais**
+```logql
+{app="seu-projeto-nestjs"}
+```
+
+## Painel especifico por Job
+### TIPO DO GRÁFICO: "STAT"
+
+![alt text](https://i.imgur.com/txWnuqZ.png)
+
+**info - VERDE**
+```logql
+sum(count_over_time({app="seu-projeto-nestjs"} | json | level = "info" and context = "jobsAService" [$__range]))
+```
+
+**errors - VERMELHO**
+```logql
+sum(count_over_time({app="seu-projeto-nestjs"} | json | level = "error" and context = "jobsAService" [$__range]))
+```
+
+**warnings - AMARELO**
+```logql
+sum(count_over_time({app="seu-projeto-nestjs"} | json | level = "warn" and context = "jobsAService" [$__range]))
+```
+
+**warnings - VERMELHO ESCURO**
+```logql
+sum(count_over_time({app="seu-projeto-nestjs"} | json | level = "crit" and context = "jobsAService" [$__range]))
+```
+
+## 🚀 Como Executar o Projeto
+
+### Pré-requisitos
+
+Antes de começar, garanta que você tenha as seguintes ferramentas instaladas na sua máquina:
+* [Docker](https://www.docker.com/get-started)
+* [Docker Compose](https://docs.docker.com/compose/install/) (a versão V2, que é executada com `docker compose`)
+
+### Configuração do Ambiente
+
+O projeto utiliza variáveis de ambiente para configurar parâmetros importantes, como os tempos de execução dos jobs e as credenciais do banco de dados.
+
+1.  Na raiz do projeto, crie um arquivo chamado `.env.example` com o seguinte conteúdo:
+
+    ```env
+    # Variáveis da Aplicação NestJS
+    # Tempos em milissegundos para o intervalo de cada job
+    JOB_A_TIME=30000
+    JOB_B_TIME=40000
+    JOB_C_TIME=50000
+
+    # Credenciais do Banco de Dados PostgreSQL
+    POSTGRES_USER=postgres
+    POSTGRES_PASSWORD=postgres
+    POSTGRES_DB=monitoring
+    ```
+
+2.  Agora, crie o seu arquivo de configuração pessoal a partir do exemplo:
+
+    ```bash
+    cp .env.example .env
+    ```
+
+3.  Abra o arquivo `.env` e ajuste os valores se desejar. A aplicação funcionará com os valores padrão.
+
+### Iniciando a Stack
+
+Com o arquivo `.env` configurado, você pode iniciar todos os serviços com um único comando:
+
+```bash
 docker compose up -d --build
 ```
 
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 💻 Como Usar
+Após iniciar a stack, os seguintes serviços estarão disponíveis:
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+API NestJS: http://localhost:5666
 
-## Description
+Grafana: http://localhost:3020
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Usuário: admin 
 
-## Project setup
+Senha: admin (deve trocar de senha)
 
-```bash
-$ npm install
+Para gerar logs e ver o sistema em ação, dispare uma requisição para o endpoint principal da API. Isso iniciará os setIntervals que simulam a execução contínua dos jobs.
+
+Você pode fazer isso através do seu navegador, curl ou qualquer cliente de API:
+
+Requisição com curl:
+```
+curl http://localhost:5666/jobs
 ```
 
-## Compile and run the project
 
-```bash
-# development
-$ npm run start
+## 🔮 Próximos Passos (Possíveis Melhorias)
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- [ ] Integrar com um banco de dados **PostgreSQL** para persistir os resultados dos jobs.
+- [ ] Adicionar um message broker como o **RabbitMQ** para gerenciar a execução das tarefas de forma assíncrona.
+- [ ] Preparar a aplicação para deploy em um cluster **Kubernetes (K8s)**.
+- [ ] Criar alertas no Grafana para serem notificados quando um job falhar.
