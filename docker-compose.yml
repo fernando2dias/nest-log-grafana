@@ -54,6 +54,20 @@ services:
     networks:
       - monitoring
 
+  rabbitmq:
+    image: rabbitmq:latest
+    restart: unless-stopped 
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - monitoring
+
 networks:
   monitoring:
 
@@ -61,3 +75,4 @@ volumes:
   postgresql-volume:
   grafana-data:
   loki-data:
+  rabbitmq-data:

@@ -4,6 +4,7 @@ import { Logger } from "winston";
 import { jobsAService } from "./jobsA.service";
 import { jobsBService } from "./jobsB.service";
 import { jobsCService } from "./jobsC.service";
+import { jobsEService } from "./jobsE.service";
 
 @Controller('jobs')
 export class JobsController{
@@ -12,6 +13,7 @@ export class JobsController{
         private readonly jobsAService: jobsAService,
         private readonly jobsBService: jobsBService,
         private readonly jobsCService: jobsCService,
+        private readonly jobsEService: jobsEService
     ) {}
 
     @Get()
@@ -43,5 +45,14 @@ export class JobsController{
             this.logger.error('Erro ao executar tarefa C:', error.message);
             }
         }, Number(process.env.JOB_C_TIME) || 50000); // 50 seconds
+
+        setInterval(async () => {
+            try {
+            this.logger.info('Iniciando tarefa E');
+            await this.jobsEService.initJob();
+            } catch (error) {
+            this.logger.error('Erro ao executar tarefa E:', error.message);
+            }
+        }, Number(process.env.JOB_C_TIME) || 50000); // 30 seconds
     }
 }
