@@ -55,7 +55,7 @@ services:
       - monitoring
 
   rabbitmq:
-    image: rabbitmq:latest
+    image: rabbitmq:3-management
     restart: unless-stopped 
     ports:
       - 5672:5672

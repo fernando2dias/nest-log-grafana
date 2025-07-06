@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { JobsModule } from './jobs/jobs.module';
+import { MessagesModule } from './messages/messages.module';
 
 const LokiTransport = require('winston-loki');
 
@@ -84,6 +85,7 @@ const getLogOrigin = () => {
         };
       },
     }),
+    MessagesModule
   ],
   controllers: [AppController],
   providers: [AppService],

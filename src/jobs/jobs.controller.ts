@@ -53,6 +53,6 @@ export class JobsController{
             } catch (error) {
             this.logger.error('Erro ao executar tarefa E:', error.message);
             }
-        }, Number(process.env.JOB_C_TIME) || 50000); // 30 seconds
+        }, Number(process.env.JOB_E_TIME) || 30000); // 30 seconds
     }
 }
